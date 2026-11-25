@@ -35,13 +35,22 @@ def api(url, data=None):
 def fetch_repos():
     """Public repos always; private repos only when a user PAT is present."""
     if PAT:
-        try: api("https://api.github.com/user")
+        try: me = api("https://api.github.com/user")
         except Exception as e:
             raise RuntimeError(f"GH_PAT cannot authenticate - check the token value and its 'repo' scope ({e})")
-        url = "https://api.github.com/user/repos?per_page=100&affiliation=owner&visibility=all&sort=updated"
+        owned = me.get("total_private_repos")
+        print("token user:", me.get("login"), "| private repos on account:", "unknown" if owned is None else owned)
+        url = ("https://api.github.com/user/repos?per_page=100&affiliation=owner,organization_member"
+               "&visibility=all&sort=updated")
     else:
         url = f"https://api.github.com/users/{USER}/repos?per_page=100&type=owner&sort=updated"
-    repos = [r for r in api(url) if not r["fork"]]
+    raw, page = [], 1
+    while True:
+        batch = api(f"{url}&page={page}")
+        raw += batch
+        if len(batch) < 100: break
+        page += 1
+    repos = [r for r in raw if not r["fork"]]
     for r in repos:
         r["private"] = bool(r.get("private"))
         try: r["_langs"] = api(r["languages_url"])
@@ -468,6 +477,9 @@ if __name__ == "__main__":
         print("auth:", "GH_PAT -> private repos + contributions" if PAT else "public API only (add GH_PAT for private data)")
         repos = fetch_repos()
         print("repos:", len(repos), "| private:", sum(1 for r in repos if r.get("private")))
+        if PAT and not any(r.get("private") for r in repos):
+            print("hint: token sees 0 private repos - classic PAT needs the 'repo' scope, fine-grained needs")
+            print("      'All repositories' + Contents: read, and org repos need SSO authorisation")
         total, weeks = fetch_calendar()
         try:
             lines = write_avatar(repos, total)
