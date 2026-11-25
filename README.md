@@ -11,7 +11,7 @@
 ## Terminal
 
 <div align="center">
-  <img src="assets/avatar-ascii.svg" alt="ASCII portrait of Cata5 rendered from the GitHub avatar" width="330" />
+  <img src="assets/avatar-ascii.svg" alt="Terminal dashboard with a braille portrait of Cata5 and live profile stats" width="100%" />
 </div>
 
 ## Repo Galaxy
