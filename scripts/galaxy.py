@@ -6,14 +6,15 @@ No dependencies (stdlib only). Run in GitHub Actions or locally:
   GITHUB_TOKEN=xxx python scripts/galaxy.py Cata5
   python scripts/galaxy.py Cata5 --mock      # offline preview
 """
-import datetime, json, math, os, random, re, sys, urllib.request
+import datetime, json, math, os, random, re, struct, sys, urllib.request, zlib
 from collections import defaultdict
 from xml.sax.saxutils import escape
 
 USER = next((a for a in sys.argv[1:] if not a.startswith("--")), "Cata5")
 MOCK = "--mock" in sys.argv
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets")
-TOKEN = os.environ.get("GH_PAT") or os.environ.get("GITHUB_TOKEN", "")
+PAT = os.environ.get("GH_PAT", "")            # user token: unlocks private repos/contributions
+TOKEN = PAT or os.environ.get("GITHUB_TOKEN", "")
 
 LANG_COLORS = {
     "Python": "#4B8BBE", "TypeScript": "#3178C6", "JavaScript": "#F7DF1E",
@@ -32,9 +33,14 @@ def api(url, data=None):
         return json.load(r)
 
 def fetch_repos():
-    repos = api(f"https://api.github.com/users/{USER}/repos?per_page=100&type=owner&sort=updated")
-    repos = [r for r in repos if not r["fork"]]
+    """Public repos always; private repos only when a user PAT is present."""
+    if PAT:
+        url = "https://api.github.com/user/repos?per_page=100&affiliation=owner&visibility=all&sort=updated"
+    else:
+        url = f"https://api.github.com/users/{USER}/repos?per_page=100&type=owner&sort=updated"
+    repos = [r for r in api(url) if not r["fork"]]
     for r in repos:
+        r["private"] = bool(r.get("private"))
         try: r["_langs"] = api(r["languages_url"])
         except Exception: r["_langs"] = {r["language"]: 1} if r["language"] else {}
     return repos
@@ -78,10 +84,12 @@ def fetch_calendar():
     return fetch_calendar_public()
 
 def mock_repos():
-    names = [("CataAI-Ultra","Python",3),("Proiect-Python","Python",1),("EzyAid","JavaScript",2),
-             ("TranslateEdu","Python",0),("Portfolio","TypeScript",4),("Blender-Scenes","HTML",0),
-             ("Arduino-Lab","C++",1),("NextShop","TypeScript",2),("Styles","CSS",0)]
-    return [{"name":n,"language":l,"stargazers_count":s,"_langs":{l:random.randint(3000,40000)}} for n,l,s in names]
+    names = [("CataAI-Ultra","Python",3,False),("Proiect-Python","Python",1,False),("EzyAid","JavaScript",2,False),
+             ("TranslateEdu","Python",0,False),("Portfolio","TypeScript",4,False),("Blender-Scenes","HTML",0,False),
+             ("Arduino-Lab","C++",1,False),("NextShop","TypeScript",2,False),("Styles","CSS",0,False),
+             ("secret-lab","Python",1,True)]
+    return [{"name":n,"language":l,"stargazers_count":s,"private":p,
+             "_langs":{l:random.randint(3000,40000)}} for n,l,s,p in names]
 
 def mock_calendar():
     rnd = random.Random(7)
@@ -118,8 +126,12 @@ def repo_galaxy(repos):
     cx, cy = 600, 175
     rnd = random.Random(USER)
 
+    public = [r for r in repos if not r.get("private")]
+    private = [r for r in repos if r.get("private")]
+
+    # language mix is computed from public repos only: private stacks never leak
     totals = defaultdict(int)
-    for r in repos:
+    for r in public:
         for l, b in r["_langs"].items(): totals[l] += b
     grand = sum(totals.values()) or 1
     ranked = sorted(totals.items(), key=lambda x: -x[1])[:5]
@@ -152,11 +164,11 @@ def repo_galaxy(repos):
     s.append(f'<circle class="pulse" cx="{cx}" cy="{cy}" r="16" fill="url(#corer)"/>')
     s.append(f'<circle cx="{cx}" cy="{cy}" r="3" fill="#fff"/>')
 
-    # repos = bright labelled stars
+    # repos = bright labelled stars; private ones stay unnamed
     placed = []
-    for i, r in enumerate(sorted(repos, key=lambda r: -sum(r["_langs"].values()))):
+    for i, r in enumerate(sorted(public, key=lambda r: -sum(r["_langs"].values()))):
         lang = max(r["_langs"], key=r["_langs"].get) if r["_langs"] else "Other"
-        t = 0.25 + 0.7*(i+1)/(len(repos)+1)
+        t = 0.25 + 0.7*(i+1)/(len(public)+1)
         x, y = arm_point(lang, t, 0.12)
         rad = 3.5 + math.sqrt(r["stargazers_count"])*2.2
         c = color(lang)
@@ -168,6 +180,18 @@ def repo_galaxy(repos):
             s.append(f'<text x="{x+rad+6:.0f}" y="{y+3:.0f}" font-size="10" font-weight="700" fill="#e0e7ff">{escape(r["name"])}'
                      f'<tspan fill="#8b93c9" font-weight="400"> ★ {r["stargazers_count"]}</tspan></text>')
 
+    # private repos: anonymous grey stars, never named, never counted in the arms
+    for i, r in enumerate(sorted(private, key=lambda r: -r["stargazers_count"])):
+        t = 0.3 + 0.6*(i+1)/(len(private)+1)
+        x, y = arm_point(None, t, 0.55)
+        rad = 3.5 + math.sqrt(r["stargazers_count"])*2.2
+        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*3:.1f}" fill="#8b949e" opacity=".28" filter="url(#glowr)"/>')
+        s.append(f'<circle class="tw" style="--d:{rnd.uniform(2.5,5):.1f}s;--o:-{rnd.uniform(0,5):.1f}s" cx="{x:.1f}" cy="{y:.1f}" r="{rad:.1f}" fill="#8b949e"/>')
+        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*.4:.1f}" fill="#fff"/>')
+        if len(placed) < 7 and all(abs(x-px)>70 or abs(y-py)>14 for px,py in placed):
+            placed.append((x, y))
+            s.append(f'<text x="{x+rad+6:.0f}" y="{y+3:.0f}" font-size="10" font-weight="700" fill="#8b93c9">private</text>')
+
     # shooting stars
     for o in (0, 3.5):
         s.append(f'<line class="shoot" style="--o:{o}s" x1="{80+o*60}" y1="{30+o*10}" x2="{50+o*60}" y2="{18+o*10}" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>')
@@ -176,8 +200,11 @@ def repo_galaxy(repos):
     stars = sum(r["stargazers_count"] for r in repos)
     s.append('<text x="36" y="46" font-size="9" letter-spacing="3" fill="#7c86ff">REPO GALAXY</text>')
     s.append(f'<text x="36" y="76" font-size="22" font-weight="800" fill="#fff">@{escape(USER)}</text>')
-    s.append(f'<text x="36" y="98" font-size="11" fill="#a5b4fc">{stars} stars · {len(repos)} repositories</text>')
-    s.append('<text x="36" y="114" font-size="9" fill="#6b73b8">Each star is a repository, sized by its stars.</text>')
+    s.append(f'<text x="36" y="98" font-size="11" fill="#a5b4fc">{stars} stars · {len(repos)} repositories'
+             + (f' · {len(private)} private' if private else '') + '</text>')
+    s.append('<text x="36" y="114" font-size="9" fill="#6b73b8">'
+             + ('Each star is a repository; private ones are left unnamed.' if private else 'Each star is a repository, sized by its stars.')
+             + '</text>')
     s.append('<text x="36" y="196" font-size="9" letter-spacing="3" fill="#7c86ff">ARMS</text>')
     for i, (l, b) in enumerate(ranked):
         y = 220 + i*20
@@ -236,6 +263,123 @@ def contrib_galaxy(total, weeks):
     s.append(f'<rect x=".75" y=".75" width="{W-1.5}" height="{H-1.5}" rx="18" fill="none" stroke="#4f5bd5" stroke-opacity=".55"/></g></svg>')
     return "\n".join(s)
 
+# ───────────────────────── ascii portrait ─────────────────────────
+RAMP = " .:-=+*#%@"
+
+def fetch_bytes(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "galaxy-profile"})
+    with urllib.request.urlopen(req, timeout=30) as r: return r.read()
+
+def decode_png(data):
+    """Minimal decoder for 8-bit, non-interlaced PNGs (grey, RGB, RGBA)."""
+    if data[:8] != b"\x89PNG\r\n\x1a\n": raise ValueError("not a png")
+    pos, idat, w, h, ctype = 8, b"", None, None, None
+    while pos < len(data):
+        ln, typ = struct.unpack(">I4s", data[pos:pos+8])
+        chunk = data[pos+8:pos+8+ln]; pos += 12 + ln
+        if typ == b"IHDR":
+            w, h, depth, ctype, _, _, inter = struct.unpack(">IIBBBBB", chunk)
+            if depth != 8 or inter: raise ValueError("unsupported png variant")
+        elif typ == b"IDAT": idat += chunk
+        elif typ == b"IEND": break
+    if w is None: raise ValueError("no IHDR")
+    bpp = {0: 1, 2: 3, 4: 2, 6: 4}[ctype]
+    raw = zlib.decompress(idat)
+    stride = w * bpp
+    out = bytearray(h * stride)
+    prev = bytearray(stride)
+    p = 0
+    for y in range(h):
+        f = raw[p]; p += 1
+        line = bytearray(raw[p:p+stride]); p += stride
+        if f == 1:
+            for i in range(bpp, stride): line[i] = (line[i] + line[i-bpp]) & 255
+        elif f == 2:
+            for i in range(stride): line[i] = (line[i] + prev[i]) & 255
+        elif f == 3:
+            for i in range(stride):
+                a = line[i-bpp] if i >= bpp else 0
+                line[i] = (line[i] + ((a + prev[i]) >> 1)) & 255
+        elif f == 4:
+            for i in range(stride):
+                a = line[i-bpp] if i >= bpp else 0
+                b = prev[i]; c = prev[i-bpp] if i >= bpp else 0
+                pa, pb, pc = abs(b-c), abs(a-c), abs(a+b-2*c)
+                pr = a if (pa <= pb and pa <= pc) else (b if pb <= pc else c)
+                line[i] = (line[i] + pr) & 255
+        out[y*stride:(y+1)*stride] = line
+        prev = line
+    return w, h, bpp, bytes(out)
+
+def ascii_lines(w, h, bpp, px, cols=44):
+    """Down-sample an image to a luminance ramp; polarity follows the border colour."""
+    rows = max(1, round(cols * h / w * 0.55))  # char cells are ~2x taller than wide
+    def lum(x, y):
+        i = (y*w + x) * bpp
+        v = 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2] if bpp >= 3 else px[i]
+        alpha = px[i+bpp-1] if bpp in (2, 4) else 255
+        return v * (alpha/255)
+    border = [lum(x, 0) for x in range(0, w, 5)] + [lum(x, h-1) for x in range(0, w, 5)] \
+           + [lum(0, y) for y in range(0, h, 5)] + [lum(w-1, y) for y in range(0, h, 5)]
+    invert = sum(border)/len(border) > 140
+    grid, vals = [], []
+    for ry in range(rows):
+        row = []
+        for rx in range(cols):
+            tot = n = 0
+            for y in range(ry*h//rows, max(ry*h//rows+1, (ry+1)*h//rows), max(1, h//rows//3)):
+                for x in range(rx*w//cols, max(rx*w//cols+1, (rx+1)*w//cols), max(1, w//cols//3)):
+                    tot += lum(x, y); n += 1
+            v = tot/n
+            v = 255 - v if invert else v
+            row.append(v); vals.append(v)
+        grid.append(row)
+    vals.sort()
+    lo, hi = vals[len(vals)//20], vals[-max(1, len(vals)//20)]
+    span = max(hi - lo, 1e-6)
+    out = []
+    for row in grid:
+        line = "".join(RAMP[max(0, min(len(RAMP)-1, int((v-lo)/span*(len(RAMP)-1) + .5)))] for v in row)
+        out.append(line.rstrip())
+    return out
+
+def avatar_svg(lines):
+    fs, cw, lh = 10.5, 6.4, 11.5
+    cols = max(len(l) for l in lines) or 1
+    padx, padtop, padbot = 22, 46, 30
+    W = round(cols*cw + padx*2)
+    H = round(len(lines)*lh + padtop + padbot)
+    head = (f'<text x="{padx}" y="24" font-size="8" letter-spacing="3" fill="#7c86ff">ASCII PORTRAIT</text>'
+            f'<text x="{W-padx}" y="24" font-size="8" letter-spacing="1" fill="#6b73b8" text-anchor="end">'
+            f'github.com/{escape(USER)}</text>')
+    art = "".join(f'<text x="{padx}" y="{round(padtop + i*lh)}" xml:space="preserve">{escape(l)}</text>'
+                  for i, l in enumerate(lines))
+    prompt = (f'<line x1="{padx}" y1="{H-20}" x2="{W-padx}" y2="{H-20}" stroke="#4f5bd5" stroke-opacity=".45"/>'
+              f'<text x="{padx}" y="{H-6}" font-size="9" fill="#8b93c9">cata5@github:~$ '
+              f'<tspan class="cur" fill="#a5b4fc">_</tspan></text>')
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" xml:space="preserve">
+<title>ASCII portrait of @{escape(USER)}</title>
+<desc>Luminance-rendered ASCII art generated from the GitHub profile picture.</desc>
+<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#e0e7ff"/><stop offset="1" stop-color="#818cf8"/></linearGradient>
+  <filter id="ablur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter></defs>
+<style>text{{font-family:'JetBrains Mono','Fira Code',ui-monospace,Menlo,monospace}}
+.cur{{animation:blink 1.2s steps(1) infinite}}@keyframes blink{{50%{{opacity:0}}}}</style>
+<rect width="{W}" height="{H}" rx="16" fill="#05070f"/>
+<rect x=".75" y=".75" width="{W-1.5}" height="{H-1.5}" rx="16" fill="none" stroke="#4f5bd5" stroke-opacity=".55"/>
+{head}
+<g filter="url(#ablur)" opacity=".45" fill="#a5b4fc">{art}</g>
+<g fill="url(#ag)">{art}</g>
+{prompt}
+</svg>'''
+
+def write_avatar(cols=44):
+    w, h, bpp, px = decode_png(fetch_bytes(f"https://github.com/{USER}.png?size=420"))
+    lines = ascii_lines(w, h, bpp, px, cols)
+    with open(os.path.join(OUT, "avatar-ascii.svg"), "w", encoding="utf-8") as f:
+        f.write(avatar_svg(lines))
+    return len(lines)
+
 # ───────────────────────── main ─────────────────────────
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
@@ -244,6 +388,10 @@ if __name__ == "__main__":
     else:
         repos = fetch_repos()
         total, weeks = fetch_calendar()
+        try:
+            rows = write_avatar()
+            print("ascii portrait:", rows, "rows")
+        except Exception as e: print("avatar render skipped:", e, file=sys.stderr)
     open(os.path.join(OUT, "repo-galaxy.svg"), "w", encoding="utf-8").write(repo_galaxy(repos))
     open(os.path.join(OUT, "contrib-galaxy.svg"), "w", encoding="utf-8").write(contrib_galaxy(total, weeks))
     print("done:", len(repos), "repos,", total, "contributions ->", os.path.abspath(OUT))
