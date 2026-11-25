@@ -11,6 +11,7 @@ from collections import defaultdict
 from xml.sax.saxutils import escape
 
 USER = next((a for a in sys.argv[1:] if not a.startswith("--")), "Cata5")
+ROLE = "ML/AI software engineer"   # dashboard role line; set to "" to derive it from the GitHub bio/languages
 MOCK = "--mock" in sys.argv
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets")
 PAT = os.environ.get("GH_PAT", "")            # user token: unlocks private repos/contributions
@@ -387,7 +388,7 @@ def profile_info(repos, total):
     return {
         "handle": p.get("login") or USER,
         "name": p.get("name") or USER,
-        "role": p.get("bio") or ("/".join(tops[:3]) + " developer" if tops else "developer"),
+        "role": ROLE or p.get("bio") or ("/".join(tops[:3]) + " developer" if tops else "software engineer"),
         "location": p.get("location") or "the public internet",
         "stack": ", ".join(tops) if tops else "not enough data",
         "repos": len(repos),

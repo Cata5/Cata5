@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&height=230&color=0:03040d,50:312e81,100:7c3aed&text=Manu%20Catalin%20Gabriel&fontColor=e0e7ff&fontSize=52&fontAlignY=40&desc=Frontend%20%7C%20Full-stack%20engineer%20%E2%80%A2%20Romania&descSize=18&descAlignY=62&animation=fadeIn" alt="banner" width="100%" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=230&color=0:03040d,50:312e81,100:7c3aed&text=Manu%20Catalin%20Gabriel&fontColor=e0e7ff&fontSize=52&fontAlignY=40&desc=ML%2FAI%20software%20engineer%20%E2%80%A2%20Romania&descSize=18&descAlignY=62&animation=fadeIn" alt="banner" width="100%" />
 
   <a href="https://github.com/Cata5">
-    <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=900&color=A5B4FC&center=true&vCenter=true&width=700&lines=Hi!+I%27m+Cata5;Building+things+with+React+%26+Next.js;Exploring+AI+with+PyTorch;Tinkering+with+Arduino+%26+Blender" alt="typing" />
+    <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=900&color=A5B4FC&center=true&vCenter=true&width=700&lines=Hi!+I%27m+Cata5;ML%2FAI+software+engineer;Building+with+React+%26+Next.js;Exploring+AI+with+PyTorch" alt="typing" />
   </a>
 </div>
 
