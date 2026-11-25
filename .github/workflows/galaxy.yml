@@ -6,7 +6,7 @@ on:
   workflow_dispatch:           # manual "Run workflow" button
   push:
     branches: [main]
-    paths: ["scripts/galaxy.py"]
+    paths: ["scripts/galaxy.py", ".github/workflows/galaxy.yml"]
 
 permissions:
   contents: write
@@ -19,9 +19,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build SVGs
+      - name: Build SVGs from GitHub
         env:
-          # swap for a personal access token (secret GH_PAT) if you want PRIVATE contributions counted
+          # optional secret GH_PAT counts private repos/contributions; falls back to GITHUB_TOKEN
+          GH_PAT: ${{ secrets.GH_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/galaxy.py Cata5
       - name: Commit

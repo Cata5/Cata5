@@ -6,14 +6,14 @@ No dependencies (stdlib only). Run in GitHub Actions or locally:
   GITHUB_TOKEN=xxx python scripts/galaxy.py Cata5
   python scripts/galaxy.py Cata5 --mock      # offline preview
 """
-import json, math, os, random, sys, urllib.request
+import datetime, json, math, os, random, re, sys, urllib.request
 from collections import defaultdict
 from xml.sax.saxutils import escape
 
 USER = next((a for a in sys.argv[1:] if not a.startswith("--")), "Cata5")
 MOCK = "--mock" in sys.argv
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets")
-TOKEN = os.environ.get("GITHUB_TOKEN", "")
+TOKEN = os.environ.get("GH_PAT") or os.environ.get("GITHUB_TOKEN", "")
 
 LANG_COLORS = {
     "Python": "#4B8BBE", "TypeScript": "#3178C6", "JavaScript": "#F7DF1E",
@@ -39,13 +39,43 @@ def fetch_repos():
         except Exception: r["_langs"] = {r["language"]: 1} if r["language"] else {}
     return repos
 
-def fetch_calendar():
+def fetch_calendar_graphql():
     q = """query($u:String!){user(login:$u){contributionsCollection{contributionCalendar{
       totalContributions weeks{contributionDays{date contributionCount}}}}}}"""
     body = json.dumps({"query": q, "variables": {"u": USER}}).encode()
     d = api("https://api.github.com/graphql", body)
+    if "errors" in d: raise RuntimeError(d["errors"])
     cal = d["data"]["user"]["contributionsCollection"]["contributionCalendar"]
     return cal["totalContributions"], [[day["contributionCount"] for day in w["contributionDays"]] for w in cal["weeks"]]
+
+def fetch_calendar_public():
+    """Token-free fallback: parse the public contribution calendar page."""
+    url = f"https://github.com/users/{USER}/contributions"
+    req = urllib.request.Request(url, headers={"User-Agent": "galaxy-profile", "Accept": "text/html"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        html = r.read().decode("utf-8")
+    counts = {}
+    for cid, text in re.findall(r'<tool-tip[^>]*for="(contribution-day-component-[\d-]+)"[^>]*>(.*?)</tool-tip>', html, re.S):
+        m = re.match(r"\s*(\d[\d,]*)\s+contribution", text)
+        counts[cid] = int(m.group(1).replace(",", "")) if m else 0
+    days = {}
+    for tag in re.findall(r"<td\b[^>]*>", html):
+        cid = re.search(r'id="(contribution-day-component-[\d-]+)"', tag)
+        date = re.search(r'data-date="(\d{4}-\d{2}-\d{2})"', tag)
+        if cid and date: days[datetime.date.fromisoformat(date.group(1))] = counts.get(cid.group(1), 0)
+    if not days: raise RuntimeError(f"no contribution days found on {url}")
+    first, last = min(days), max(days)
+    weeks = [[0]*7 for _ in range((last-first).days//7 + 1)]
+    for day, n in days.items():
+        weeks[(day-first).days//7][(day.weekday()+1) % 7] = n
+    return sum(days.values()), weeks
+
+def fetch_calendar():
+    """Real contribution data: GraphQL when a token is available, public page otherwise."""
+    if TOKEN:
+        try: return fetch_calendar_graphql()
+        except Exception as e: print("graphql calendar failed, falling back to public page:", e, file=sys.stderr)
+    return fetch_calendar_public()
 
 def mock_repos():
     names = [("CataAI-Ultra","Python",3),("Proiect-Python","Python",1),("EzyAid","JavaScript",2),
@@ -213,9 +243,7 @@ if __name__ == "__main__":
         repos, (total, weeks) = mock_repos(), mock_calendar()
     else:
         repos = fetch_repos()
-        try: total, weeks = fetch_calendar()
-        except Exception as e:
-            print("calendar fetch failed (token needed):", e); total, weeks = mock_calendar()
+        total, weeks = fetch_calendar()
     open(os.path.join(OUT, "repo-galaxy.svg"), "w", encoding="utf-8").write(repo_galaxy(repos))
     open(os.path.join(OUT, "contrib-galaxy.svg"), "w", encoding="utf-8").write(contrib_galaxy(total, weeks))
-    print("done:", len(repos), "repos,", total, "contributions")
+    print("done:", len(repos), "repos,", total, "contributions ->", os.path.abspath(OUT))
