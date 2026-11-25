@@ -197,10 +197,10 @@ def repo_galaxy(repos):
         t = 0.3 + 0.6*(i+1)/(len(private)+1)
         x, y = arm_point(None, t, 0.55)
         rad = 3.5 + math.sqrt(r["stargazers_count"])*2.2
-        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*3:.1f}" fill="#8b949e" opacity=".28" filter="url(#glowr)"/>')
-        s.append(f'<circle class="tw" style="--d:{rnd.uniform(2.5,5):.1f}s;--o:-{rnd.uniform(0,5):.1f}s" cx="{x:.1f}" cy="{y:.1f}" r="{rad:.1f}" fill="#8b949e"/>')
-        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*.4:.1f}" fill="#fff"/>')
-        if len(placed) < 7 and all(abs(x-px)>70 or abs(y-py)>14 for px,py in placed):
+        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*2.6:.1f}" fill="#8b949e" opacity=".10" filter="url(#glowr)"/>')
+        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.1f}" fill="none" stroke="#8b949e" stroke-width="1.3" opacity=".9"/>')
+        s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*.22:.1f}" fill="#8b949e" opacity=".8"/>')
+        if len(placed) < 9 and all(abs(x-px)>70 or abs(y-py)>14 for px,py in placed):
             placed.append((x, y))
             s.append(f'<text x="{x+rad+6:.0f}" y="{y+3:.0f}" font-size="10" font-weight="700" fill="#8b93c9">private</text>')
 
@@ -215,7 +215,7 @@ def repo_galaxy(repos):
     s.append(f'<text x="36" y="98" font-size="11" fill="#a5b4fc">{stars} stars · {len(repos)} repositories'
              + (f' · {len(private)} private' if private else '') + '</text>')
     s.append('<text x="36" y="114" font-size="9" fill="#6b73b8">'
-             + ('Each star is a repository; private ones are left unnamed.' if private else 'Each star is a repository, sized by its stars.')
+             + ('Each star is a repository; private ones are hollow rings, left unnamed.' if private else 'Each star is a repository, sized by its stars.')
              + '</text>')
     s.append('<text x="36" y="196" font-size="9" letter-spacing="3" fill="#7c86ff">ARMS</text>')
     for i, (l, b) in enumerate(ranked):
