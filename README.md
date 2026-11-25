@@ -1,62 +1,21 @@
-<h2 align="left">Hi 👋! My name is Cata5 and I'm a programming enthusiast from Romania.</h2>
-
-###
-
-<div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=Cata5&hide_title=false&hide_rank=false&show_icons=true&include_all_commits=true&count_private=true&disable_animations=false&theme=dracula&locale=en&hide_border=false" height="150" alt="stats graph"  />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs?username=Cata5&locale=en&hide_title=false&layout=compact&card_width=320&langs_count=5&theme=dracula&hide_border=false" height="150" alt="languages graph"  />
-</div>
-
-###
-
-<div align="center">
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" height="60" alt="javascript logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" height="60" alt="typescript logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" height="60" alt="react logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" height="60" alt="html5 logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" height="60" alt="css3 logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" height="60" alt="python logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" height="60" alt="csharp logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" height="60" alt="nextjs logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" height="60" alt="nodejs logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" height="60" alt="redis logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" height="60" alt="pytorch logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blender/blender-original.svg" height="60" alt="blender logo"  />
-  <img width="12" />
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/arduino/arduino-original.svg" height="60" alt="arduino logo"  />
-</div>
-
-###
-
-<div align="center">
-  <a href="https://instagram.com/cata0617" target="_blank">
-    <img src="https://img.shields.io/static/v1?message=Instagram&logo=instagram&label=&color=E4405F&logoColor=&labelColor=&style=for-the-badge" height="50" alt="instagram logo"  />
-  </a>
-  <a href="mailto:cata.manu06@gmail.com" target="_blank">
-    <img src="https://img.shields.io/static/v1?message=Gmail&logo=gmail&label=&color=D14836&logoColor=white&labelColor=&style=for-the-badge" height="50" alt="gmail logo"  />
-  </a>
-  <a href="https://www.linkedin.com/in/manu-catalin-gabriel-7937762a1" target="_blank">
-    <img src="https://img.shields.io/static/v1?message=LinkedIn&logo=linkedin&label=&color=0077B5&logoColor=white&labelColor=&style=for-the-badge" height="50" alt="linkedin logo"  />
-  </a>
-</div>
-
-###
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Cata5/Cata5/output/github-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Cata5/Cata5/output/github-snake.svg" />
-  <img alt="github-snake" src="https://raw.githubusercontent.com/Cata5/Cata5/output/github-snake.svg" />
-</picture>
-
-###
+<!-- ═══════════════ HEADER BANNER ═══════════════ --> <div align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&height=240&color=0:6C5CE7,50:A855F7,100:FF79C6&text=Hi%2C%20I'm%20Cata5&fontColor=ffffff&fontSize=60&fontAlignY=38&desc=Programming%20enthusiast%20%7C%20Builder%20%7C%20Romania%20%F0%9F%87%B7%F0%9F%87%B4&descSize=20&descAlignY=60&animation=fadeIn" alt="header banner" width="100%" /> </div> <!-- ═══════════════ TYPING ANIMATION ═══════════════ --> <div align="center"> <a href="https://github.com/Cata5"> <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&duration=3000&pause=1000&color=BD93F9&center=true&vCenter=true&width=700&lines=Full-Stack+Developer+%F0%9F%9A%80;React+%26+Next.js+Enthusiast+%E2%9A%9B%EF%B8%8F;Exploring+AI+with+PyTorch+%F0%9F%A7%A0;Tinkering+with+Arduino+%26+Blender+%F0%9F%9B%A0%EF%B8%8F;Turning+coffee+into+code+%E2%98%95" alt="typing animation" /> </a> </div> <br/> <div align="center"> <img src="https://komarev.com/ghpvc/?username=Cata5&label=Profile%20views&color=a855f7&style=for-the-badge" alt="profile views" /> <img src="https://img.shields.io/github/followers/Cata5?style=for-the-badge&logo=github&color=bd93f9&labelColor=282a36" alt="followers" /> <img src="https://img.shields.io/badge/Based%20in-Romania%20🇷🇴-ff79c6?style=for-the-badge&labelColor=282a36" alt="location" /> </div> <br/> <!-- ═══════════════ ABOUT ═══════════════ -->
+👨‍💻 About Me
+js
+const cata5 = {
+  location: "Romania 🇷🇴",
+  role: "Programming enthusiast",
+  currentlyLearning: ["Next.js", "TypeScript", "PyTorch"],
+  currentlyBuilding: "Cool side projects ✨",
+  hobbies: ["Coding", "3D modeling in Blender", "Arduino hacking"],
+  funFact: "I debug with console.log and I'm not ashamed 😎",
+  lookingFor: "Collaborations & new ideas 🤝",
+};
+<!-- ═══════════════ TECH STACK ═══════════════ -->
+🧰 Tech Stack
+<div align="center"> <img src="https://skillicons.dev/icons?i=js,ts,react,nextjs,nodejs,html,css,python,cs,redis,pytorch,blender,arduino&perline=7&theme=dark" alt="tech stack" /> </div> <br/> <div align="center"> <img src="https://img.shields.io/badge/Frontend-React%20%7C%20Next.js%20%7C%20TypeScript-61DAFB?style=for-the-badge&logo=react&logoColor=white&labelColor=282a36" alt="frontend" /> <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Redis%20%7C%20C%23-68A063?style=for-the-badge&logo=nodedotjs&logoColor=white&labelColor=282a36" alt="backend" /> <img src="https://img.shields.io/badge/AI%20%2F%20ML-Python%20%7C%20PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white&labelColor=282a36" alt="ai ml" /> <img src="https://img.shields.io/badge/Hardware%20%26%203D-Arduino%20%7C%20Blender-E87D0D?style=for-the-badge&logo=blender&logoColor=white&labelColor=282a36" alt="hardware" /> </div> <!-- ═══════════════ STATS ═══════════════ -->
+📊 GitHub Stats
+<div align="center"> <img height="170" src="https://github-readme-stats.vercel.app/api?username=Cata5&show_icons=true&include_all_commits=true&count_private=true&theme=dracula&hide_border=true&bg_color=0d1117&title_color=bd93f9&icon_color=ff79c6&border_radius=12" alt="stats" /> <img height="170" src="https://github-readme-stats.vercel.app/api/top-langs/?username=Cata5&layout=compact&langs_count=6&card_width=320&theme=dracula&hide_border=true&bg_color=0d1117&title_color=bd93f9&border_radius=12" alt="top languages" /> </div> <div align="center"> <img src="https://streak-stats.demolab.com?user=Cata5&theme=dracula&hide_border=true&background=0d1117&ring=bd93f9&fire=ff79c6&currStreakLabel=bd93f9&border_radius=12" alt="streak" /> </div> <div align="center"> <img src="https://github-profile-trophy.vercel.app/?username=Cata5&theme=dracula&no-frame=true&no-bg=true&margin-w=10&row=1&column=7" alt="trophies" /> </div> <!-- ═══════════════ ACTIVITY GRAPH ═══════════════ -->
+📈 Contribution Activity
+<div align="center"> <img src="https://github-readme-activity-graph.vercel.app/graph?username=Cata5&theme=dracula&hide_border=true&bg_color=0d1117&color=bd93f9&line=ff79c6&point=ffffff&area=true&area_color=bd93f9" alt="activity graph" width="100%" /> </div> <!-- ═══════════════ CONNECT ═══════════════ -->
+🤝 Let's Connect
+<div align="center"> <a href="https://www.linkedin.com/in/manu-catalin-gabriel-7937762a1" target="_blank"> <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" height="42" alt="linkedin" /> </a> <a href="mailto:cata.manu06@gmail.com" target="_blank"> <img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" height="42" alt="gmail" /> </a> <a href="https://instagram.com/cata0617" target="_blank"> <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" height="42" alt="instagram" /> </a> </div> <br/> <!-- ═══════════════ SNAKE ═══════════════ --> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Cata5/Cata5/output/github-snake-dark.svg" /> <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Cata5/Cata5/output/github-snake.svg" /> <img alt="github-snake" src="https://raw.githubusercontent.com/Cata5/Cata5/output/github-snake.svg" /> </picture> <!-- ═══════════════ FOOTER ═══════════════ --> <div align="center"> <br/> <i>"First, solve the problem. Then, write the code."</i> <br/><br/> <img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:FF79C6,50:A855F7,100:6C5CE7&section=footer" alt="footer" width="100%" /> </div>
