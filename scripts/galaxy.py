@@ -59,12 +59,20 @@ def fetch_repos():
     return repos
 
 def fetch_calendar_graphql():
-    q = """query($u:String!){user(login:$u){contributionsCollection{contributionCalendar{
-      totalContributions weeks{contributionDays{date contributionCount}}}}}}"""
+    q = """query($u:String!){user(login:$u){contributionsCollection{
+      restrictedContributionsCount
+      contributionCalendar{totalContributions weeks{contributionDays{date contributionCount}}}}}}"""
     body = json.dumps({"query": q, "variables": {"u": USER}}).encode()
     d = api("https://api.github.com/graphql", body)
     if "errors" in d: raise RuntimeError(d["errors"])
-    cal = d["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+    coll = d["data"]["user"]["contributionsCollection"]
+    cal = coll["contributionCalendar"]
+    private = coll.get("restrictedContributionsCount") or 0
+    print(f"contributions: {cal['totalContributions']} ({private} private)")
+    if PAT and not private:
+        print("hint: this token sees no private contributions - GitHub only reports them for a classic PAT",
+              file=sys.stderr)
+        print("      with the 'repo' scope; a fine-grained token stays public-only here", file=sys.stderr)
     return cal["totalContributions"], [[day["contributionCount"] for day in w["contributionDays"]] for w in cal["weeks"]]
 
 def fetch_calendar_public():
