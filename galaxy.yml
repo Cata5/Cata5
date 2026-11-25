@@ -1,0 +1,32 @@
+name: Generate galaxy
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"   # twice a day
+  workflow_dispatch:           # manual "Run workflow" button
+  push:
+    branches: [main]
+    paths: ["scripts/galaxy.py"]
+
+permissions:
+  contents: write
+
+jobs:
+  galaxy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build SVGs
+        env:
+          # swap for a personal access token (secret GH_PAT) if you want PRIVATE contributions counted
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/galaxy.py Cata5
+      - name: Commit
+        run: |
+          git config user.name "galaxy-bot"
+          git config user.email "galaxy-bot@users.noreply.github.com"
+          git add assets/*.svg
+          git diff --staged --quiet || (git commit -m "chore: refresh galaxy ✨" && git push)
