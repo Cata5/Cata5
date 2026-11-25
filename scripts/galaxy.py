@@ -35,6 +35,9 @@ def api(url, data=None):
 def fetch_repos():
     """Public repos always; private repos only when a user PAT is present."""
     if PAT:
+        try: api("https://api.github.com/user")
+        except Exception as e:
+            raise RuntimeError(f"GH_PAT cannot authenticate - check the token value and its 'repo' scope ({e})")
         url = "https://api.github.com/user/repos?per_page=100&affiliation=owner&visibility=all&sort=updated"
     else:
         url = f"https://api.github.com/users/{USER}/repos?per_page=100&type=owner&sort=updated"
@@ -457,7 +460,9 @@ if __name__ == "__main__":
     if MOCK:
         repos, (total, weeks) = mock_repos(), mock_calendar()
     else:
+        print("auth:", "GH_PAT -> private repos + contributions" if PAT else "public API only (add GH_PAT for private data)")
         repos = fetch_repos()
+        print("repos:", len(repos), "| private:", sum(1 for r in repos if r.get("private")))
         total, weeks = fetch_calendar()
         try:
             lines = write_avatar(repos, total)
