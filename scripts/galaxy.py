@@ -399,9 +399,9 @@ def avatar_svg(lines, info):
                   f'lengthAdjust="spacing" xml:space="preserve">{escape(l)}</text>'
                   for i, l in enumerate(lines))
     def row(y, label, value):
-        return (f'<text x="{rx+14}" y="{y}" font-size="9" fill="#4f93a3">{escape(label)}</text>'
-                f'<text x="{rx+102}" y="{y}" font-size="10" fill="#d7eef4">{escape(clip(value, 46))}</text>'
-                f'<line x1="{rx+14}" y1="{y+8}" x2="{rx+rw-14}" y2="{y+8}" stroke="#0d2331"/>')
+        return (f'<text x="{rx+14}" y="{y}" font-size="9" fill="#7b83b3">{escape(label)}</text>'
+                f'<text x="{rx+102}" y="{y}" font-size="10" fill="#e0e7ff">{escape(clip(value, 46))}</text>'
+                f'<line x1="{rx+14}" y1="{y+8}" x2="{rx+rw-14}" y2="{y+8}" stroke="#221c3f"/>')
     body = "".join(
         [row(114, "Name", info["name"]),
          row(137, "Role", info["role"]),
@@ -415,35 +415,40 @@ def avatar_svg(lines, info):
 <title>ASCII portrait dashboard for @{escape(info["handle"])}</title>
 <desc>Terminal panel: braille portrait rendered from the GitHub avatar, plus live profile stats.</desc>
 <defs>
-  <linearGradient id="art" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5f3fc"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+  <linearGradient id="art" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0e7ff"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
   <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>
-  <filter id="card" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#0891b2" flood-opacity=".28"/></filter>
+  <filter id="card" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#7c3aed" flood-opacity=".28"/></filter>
+  <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#c4b5fd" stop-opacity="0"/><stop offset=".5" stop-color="#c4b5fd" stop-opacity=".14"/>
+    <stop offset="1" stop-color="#c4b5fd" stop-opacity="0"/></linearGradient>
 </defs>
 <style>
   text{{font-family:'JetBrains Mono','Fira Code',ui-monospace,Menlo,monospace}}
   .blink{{animation:blink 1.1s steps(1) infinite}}@keyframes blink{{50%{{opacity:0}}}}
   .live{{animation:live 2.4s ease-in-out infinite}}@keyframes live{{0%,100%{{opacity:1}}50%{{opacity:.35}}}}
+  .scan{{animation:scan 7s linear infinite}}@keyframes scan{{0%{{transform:translateY(0)}}100%{{transform:translateY(228px)}}}}
 </style>
-<rect width="{W}" height="{H}" rx="14" fill="#050a12" filter="url(#card)"/>
-<rect x=".75" y=".75" width="{W-1.5}" height="{H-1.5}" rx="14" fill="none" stroke="#1b4d5f"/>
+<rect width="{W}" height="{H}" rx="14" fill="#060410" filter="url(#card)"/>
+<rect x=".75" y=".75" width="{W-1.5}" height="{H-1.5}" rx="14" fill="none" stroke="#3d2f74"/>
 <circle cx="24" cy="17" r="4.5" fill="#ff5f56"/><circle cx="40" cy="17" r="4.5" fill="#ffbd2e"/>
-<circle cx="56" cy="17" r="4.5" fill="#27c93f"/>
-<text x="{W/2}" y="21" font-size="9" fill="#5c8798" text-anchor="middle">{escape(info["handle"].lower())}@dev ~ /profile.sh --live</text>
-<rect x="{W-84}" y="8" width="60" height="18" rx="9" fill="#07141c" stroke="#1d5f70"/>
-<circle class="live" cx="{W-68}" cy="17" r="2.6" fill="#4dd0e1"/>
-<text x="{W-58}" y="20.5" font-size="7.5" letter-spacing="1.5" fill="#7fdfe9">LIVE</text>
-<line x1="1" y1="34" x2="{W-1}" y2="34" stroke="#102430"/>
-<rect x="{px}" y="{py}" width="{pw}" height="{ph}" rx="8" fill="#060e17" stroke="#144253"/>
-<rect x="{rx}" y="{py}" width="{rw}" height="{ph}" rx="8" fill="#060e17" stroke="#144253"/>
-<text x="{px+14}" y="{py+22}" font-size="8" letter-spacing="2.4" fill="#4fb3c9">VISUAL_MAP</text>
-<text x="{rx+14}" y="{py+22}" font-size="8" letter-spacing="2.4" fill="#4fb3c9">SYSTEM_INFO</text>
-<g filter="url(#glow)" opacity=".55" fill="#22d3ee">{art}</g>
+<circle cx="56" cy="17" r="4.5" fill="#a78bfa"/>
+<text x="{W/2}" y="21" font-size="9" fill="#8a86b8" text-anchor="middle">{escape(info["handle"].lower())}@dev ~ /profile.sh --live</text>
+<rect x="{W-84}" y="8" width="60" height="18" rx="9" fill="#0b0820" stroke="#453a86"/>
+<circle class="live" cx="{W-68}" cy="17" r="2.6" fill="#c4b5fd"/>
+<text x="{W-58}" y="20.5" font-size="7.5" letter-spacing="1.5" fill="#c4b5fd">LIVE</text>
+<line x1="1" y1="34" x2="{W-1}" y2="34" stroke="#1c1733"/>
+<rect x="{px}" y="{py}" width="{pw}" height="{ph}" rx="8" fill="#0a0818" stroke="#2c2452"/>
+<rect x="{rx}" y="{py}" width="{rw}" height="{ph}" rx="8" fill="#0a0818" stroke="#2c2452"/>
+<text x="{px+14}" y="{py+22}" font-size="8" letter-spacing="2.4" fill="#a5b4fc">VISUAL_MAP</text>
+<text x="{rx+14}" y="{py+22}" font-size="8" letter-spacing="2.4" fill="#a5b4fc">SYSTEM_INFO</text>
+<g filter="url(#glow)" opacity=".55" fill="#7c3aed">{art}</g>
 <g fill="url(#art)">{art}</g>
-<text x="{rx+14}" y="94" font-size="8" letter-spacing="2" fill="#3f8ea2">IDENTITY</text>
-<text x="{rx+14}" y="218" font-size="8" letter-spacing="2" fill="#3f8ea2">PUBLIC_SIGNAL</text>
+<rect class="scan" x="{px+8}" y="{py+30}" width="{pw-16}" height="42" fill="url(#scan)"/>
+<text x="{rx+14}" y="94" font-size="8" letter-spacing="2" fill="#7c86ff">IDENTITY</text>
+<text x="{rx+14}" y="218" font-size="8" letter-spacing="2" fill="#7c86ff">PUBLIC_SIGNAL</text>
 {body}
-<rect class="blink" x="{W/2-3}" y="348" width="7" height="9" fill="#67e8f9"/>
-<text x="{W-18}" y="357" font-size="7" letter-spacing="1.2" fill="#2d5a68" text-anchor="end">ASCIIART // 01</text>
+<rect class="blink" x="{W/2-3}" y="348" width="7" height="9" fill="#a5b4fc"/>
+<text x="{W-18}" y="357" font-size="7" letter-spacing="1.2" fill="#413a66" text-anchor="end">ASCIIART // 01</text>
 </svg>'''
 
 def write_avatar(repos, total, cols=42):
