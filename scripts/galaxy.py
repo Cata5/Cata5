@@ -11,6 +11,7 @@ from collections import defaultdict
 from xml.sax.saxutils import escape
 
 USER = next((a for a in sys.argv[1:] if not a.startswith("--")), "Cata5")
+ORBIT = 240   # seconds for one full revolution of the galaxy
 ROLE = "ML/AI software engineer"   # dashboard role line; set to "" to derive it from the GitHub bio/languages
 MOCK = "--mock" in sys.argv
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets")
@@ -164,18 +165,35 @@ def repo_galaxy(repos):
         rad = 28 + t*165 + rnd.uniform(-10, 10)
         return cx + math.cos(ang)*rad*1.45, cy + math.sin(ang)*rad*0.72
 
+    # a star travels the ellipse through its own position: the whole field turns while
+    # staying inside the panel, and the label hanging off it never tilts
+    K = 0.72/1.45
+    def orbit_path(x, y):
+        dx, dy = x-cx, y-cy
+        rx = math.hypot(dx, dy/K)
+        ry = rx*K
+        mx, my = 2*(cx-x), 2*(cy-y)   # displacement at the far side of the ellipse
+        return (f"M 0,0 A {rx:.1f},{ry:.1f} 0 1 1 {mx:.1f},{my:.1f}"
+                f" A {rx:.1f},{ry:.1f} 0 1 1 0,0")
+
+    def orbit_open(x, y):
+        return (f'<g><animateMotion dur="{ORBIT}s" repeatCount="indefinite"'
+                f' path="{orbit_path(x, y)}"/>')
+
     s = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">',
          defs(W, H, "r"), STYLE,
          f'<g clip-path="url(#clipr)"><rect width="{W}" height="{H}" fill="url(#bgr)"/>']
 
-    # dust: thousands of tiny stars along the arms, slowly rotating
+    # dust: a circular field squashed into the elliptical arms; rotating that circle
+    # sends every speck around an ellipse instead of out through the top and bottom
+    s.append(f'<g transform="translate({cx},{cy}) scale(1,{K:.4f}) translate({-cx},{-cy})">')
     s.append(f'<g class="spin" style="--cx:{cx}px;--cy:{cy}px">')
     for l, b in ranked:
         n = int(80 + 320*b/grand)
         for _ in range(n):
             x, y = arm_point(l, rnd.random()**0.8, 0.5)
-            s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rnd.uniform(.4,1.3):.2f}" fill="{color(l)}" opacity="{rnd.uniform(.2,.8):.2f}"/>')
-    s.append('</g>')
+            s.append(f'<circle cx="{x:.1f}" cy="{cy + (y-cy)/K:.1f}" r="{rnd.uniform(.4,1.3):.2f}" fill="{color(l)}" opacity="{rnd.uniform(.2,.8):.2f}"/>')
+    s.append('</g></g>')
     for _ in range(70):  # background stars that twinkle
         s.append(f'<circle class="tw" style="--d:{rnd.uniform(2,6):.1f}s;--o:-{rnd.uniform(0,6):.1f}s" '
                  f'cx="{rnd.uniform(0,W):.0f}" cy="{rnd.uniform(0,H):.0f}" r="{rnd.uniform(.4,1):.1f}" fill="#fff"/>')
@@ -185,7 +203,9 @@ def repo_galaxy(repos):
     s.append(f'<circle class="pulse" cx="{cx}" cy="{cy}" r="16" fill="url(#corer)"/>')
     s.append(f'<circle cx="{cx}" cy="{cy}" r="3" fill="#fff"/>')
 
-    # repos = bright labelled stars; private ones stay unnamed
+    # repos = bright stars, private ones stay unnamed rings; labels are collected here
+    # and emitted afterwards so they ride above every star
+    cands = []
     placed = []
     for i, r in enumerate(sorted(public, key=lambda r: -sum(r["_langs"].values()))):
         lang = max(r["_langs"], key=r["_langs"].get) if r["_langs"] else "Other"
@@ -193,25 +213,64 @@ def repo_galaxy(repos):
         x, y = arm_point(lang, t, 0.12)
         rad = 3.5 + math.sqrt(r["stargazers_count"])*2.2
         c = color(lang)
+        s.append(orbit_open(x, y))
         s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*3:.1f}" fill="{c}" opacity=".35" filter="url(#glowr)"/>')
         s.append(f'<circle class="tw" style="--d:{rnd.uniform(2.5,5):.1f}s;--o:-{rnd.uniform(0,5):.1f}s" cx="{x:.1f}" cy="{y:.1f}" r="{rad:.1f}" fill="{c}"/>')
         s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*.4:.1f}" fill="#fff"/>')
+        s.append('</g>')
         if len(placed) < 7 and all(abs(x-px)>70 or abs(y-py)>14 for px,py in placed):
             placed.append((x, y))
-            s.append(f'<text x="{x+rad+6:.0f}" y="{y+3:.0f}" font-size="10" font-weight="700" fill="#e0e7ff">{escape(r["name"])}'
-                     f'<tspan fill="#8b93c9" font-weight="400"> ★ {r["stargazers_count"]}</tspan></text>')
+            cands.append((x, y, x+rad+6, y+3, f'{r["name"]} ★ {r["stargazers_count"]}',
+                          f'{escape(r["name"])}<tspan fill="#8b93c9" font-weight="400"> ★ {r["stargazers_count"]}</tspan>',
+                          "#e0e7ff"))
 
     # private repos: anonymous grey stars, never named, never counted in the arms
     for i, r in enumerate(sorted(private, key=lambda r: -r["stargazers_count"])):
         t = 0.3 + 0.6*(i+1)/(len(private)+1)
         x, y = arm_point(None, t, 0.55)
         rad = 3.5 + math.sqrt(r["stargazers_count"])*2.2
+        s.append(orbit_open(x, y))
         s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*2.6:.1f}" fill="#8b949e" opacity=".10" filter="url(#glowr)"/>')
         s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad:.1f}" fill="none" stroke="#8b949e" stroke-width="1.3" opacity=".9"/>')
         s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{rad*.22:.1f}" fill="#8b949e" opacity=".8"/>')
+        s.append('</g>')
         if len(placed) < 9 and all(abs(x-px)>70 or abs(y-py)>14 for px,py in placed):
             placed.append((x, y))
-            s.append(f'<text x="{x+rad+6:.0f}" y="{y+3:.0f}" font-size="10" font-weight="700" fill="#8b93c9">private</text>')
+            cands.append((x, y, x+rad+6, y+3, "private", "private", "#8b93c9"))
+
+    # a label that would cross another one at some point of the orbit is dropped, so the
+    # names stay readable the whole way round instead of piling up mid-turn
+    def label_collisions(items):
+        boxes = []
+        for sx, sy, lx, ly, text, inner, fill in items:
+            dx, dy = lx-cx, (ly-cy)/K
+            row = []
+            for k in range(72):
+                th = 2*math.pi*k/72
+                u, v = dx*math.cos(th)-dy*math.sin(th), dx*math.sin(th)+dy*math.cos(th)
+                row.append((cx+u+6, cy+K*v-9, cx+u+8+len(text)*6.0, cy+K*v+4))
+            boxes.append(row)
+        hit = [0]*72
+        pair = {}
+        for i in range(len(items)):
+            for j in range(i+1, len(items)):
+                n = 0
+                for k in range(72):
+                    a, b = boxes[i][k], boxes[j][k]
+                    if a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]:
+                        n += 1; hit[k] += 1
+                if n: pair[(i, j)] = n
+        if not pair: return 0.0, None
+        return sum(1 for h in hit if h)/72, max(pair, key=pair.get)
+
+    while len(cands) > 4:
+        frac, worst = label_collisions(cands)
+        if frac <= 0.10 or worst is None: break
+        cands.pop(max(worst))
+
+    for sx, sy, lx, ly, text, inner, fill in cands:
+        s.append(f'<g><animateMotion dur="{ORBIT}s" repeatCount="indefinite" path="{orbit_path(sx, sy)}"/>'
+                 f'<text x="{lx:.0f}" y="{ly:.0f}" font-size="10" font-weight="700" fill="{fill}">{inner}</text></g>')
 
     # shooting stars
     for o in (0, 3.5):
@@ -235,7 +294,6 @@ def repo_galaxy(repos):
     s.append(f'<rect x=".75" y=".75" width="{W-1.5}" height="{H-1.5}" rx="18" fill="none" stroke="#4f5bd5" stroke-opacity=".55"/></g></svg>')
     return "\n".join(s)
 
-# ───────────────────────── contribution galaxy (snake replacement) ─────────────────────────
 def contrib_galaxy(total, weeks):
     W, H = 900, 220
     rnd = random.Random(42)
